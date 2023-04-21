@@ -1,0 +1,7 @@
+block.block.*.third_party.block_title_class:
+  type: mapping
+  label: Block title class third party settings
+  mapping:
+    title_class:
+      type: string
+      label: Additional class for the block title

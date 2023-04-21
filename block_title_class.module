@@ -1,0 +1,132 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for Block Title Class module.
+ *
+ * @DCG
+ * This file is no longer required in Drupal 8.
+ * @see https://www.drupal.org/node/2217931
+ */
+
+use Drupal\block\BlockInterface;
+use Drupal\Core\Entity\EntityFormInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function block_title_class_form_block_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form_object = $form_state->getFormObject();
+
+  // Implement the alter only if is a instance of EntityFormInterface.
+  if (!($form_object instanceof EntityFormInterface)) {
+    return;
+  }
+
+  // Put the default help text.
+  $help_text = t('Add a class to the block title to change the style.');
+
+  /** @var \Drupal\block\BlockInterface $block */
+  $block = $form_object->getEntity();
+
+  $form['title_class'] = [
+    '#type' => 'details',
+    '#title' => t('Title Class'),
+    '#open' => TRUE,
+    '#weight' => 0,
+    '#description' => '',
+  ];
+
+  // This will automatically be saved in the third party settings.
+  $form['title_class']['third_party_settings']['#tree'] = TRUE;
+
+  $form['title_class']['third_party_settings']['block_title_class']['title_class'] = [
+    '#type' => 'select',
+    '#title' => t('Title class'),
+    '#options' => [
+      '_none' => t('None'),
+      'h1' => 'h1',
+      'h2' => 'h2',
+      'h3' => 'h3',
+      'h4' => 'h4',
+      'h5' => 'h5',
+      'h6' => 'h6',
+    ],
+    '#description' => $help_text,
+    '#default_value' => $block->getThirdPartySetting('block_title_class', 'title_class'),
+  ];
+
+  $form['title_class']['third_party_settings']['block_title_class']['title_class']['#attributes']['class'][] = 'block-title-class-title-class';
+  $form['#validate'][] = 'block_title_class_form_block_form_validate';
+}
+
+/**
+ * Save the selected option as third party setting when the block configuration is saved.
+ */
+function block_title_class_block_presave(BlockInterface $entity) {
+  // If there is no class, unset the Third Party Setting.
+  if (empty($entity->getThirdPartySetting('block_title_class', 'title_class'))) {
+    $entity->unsetThirdPartySetting('block_title_class', 'title_class');
+  }
+  // Get the title class.
+  $title_class = $entity->getThirdPartySetting('block_title_class', 'title_class');
+
+  // Set the Third Party Settings.
+  $entity->setThirdPartySetting('block_title_class', 'title_class', $title_class);
+}
+
+/**
+ * Form validate.
+ */
+function block_title_class_form_block_form_validate(&$form, FormStateInterface $form_state) {
+  // Get the ThirdPartySettings.
+  $third_party_settings = $form_state->getValue('title_class')['third_party_settings'];
+
+  // Clear empty values.
+  if (!empty($third_party_settings['block_title_class'])) {
+    $third_party_settings['block_title_class'] = array_filter($third_party_settings['block_title_class']);
+  }
+
+  // Merge with all third party settings.
+  $all_third_party_settings = $form_state->getValue('third_party_settings');
+  if (!empty($all_third_party_settings)) {
+    $third_party_settings = array_merge($third_party_settings, $all_third_party_settings);
+  }
+
+  // Set the ThirdPartySettings with the default array.
+  $form_state->setValue('third_party_settings', $third_party_settings);
+
+  // Unset the old values.
+  $form_state->unsetValue('title_class');
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function block_title_class_preprocess_block(&$variables) {
+  // Get EntityTypeManager service.
+  $entity_type_manager = \Drupal::service('entity_type.manager');
+  $blocckStorage = $entity_type_manager->getStorage('block');
+
+  // Blocks coming from page manager widget does not have id. If there is no
+  // Block ID, skip that.
+  if (empty($variables['elements']['#id'])) {
+    return;
+  }
+
+  // If there is no block with this ID, skip.
+  if (empty($blocckStorage->load($variables['elements']['#id']))) {
+    return;
+  }
+
+  // Load the block by ID.
+  $block = $blocckStorage->load($variables['elements']['#id']);
+
+  // Verify if the current block has Third Party Settings with classes.
+  $title_class = $block->getThirdPartySetting('block_title_class', 'title_class');
+
+  if (!empty($title_class) && $title_class !== '_none') {
+    $variables['title_attributes']['class'][] = $title_class;
+  }
+}

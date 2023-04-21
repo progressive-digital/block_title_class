@@ -1,0 +1,7 @@
+name: Block Title Class
+type: module
+description: Provides the possibility to add a class to the block title
+package: User interface
+core_version_requirement: ^9 || ^10
+dependencies:
+  - drupal:block

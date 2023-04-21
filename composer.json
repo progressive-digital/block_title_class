@@ -1,0 +1,21 @@
+{
+  "name": "progressive-digital/block_title_class",
+  "description": "Provides additional features for drupal fields.",
+  "type": "drupal-module",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Guido Schmitz",
+      "email": "schmitz@progressivedigital.de",
+      "homepage": "https://progressivedigital.de",
+      "role": "Developer"
+    }
+  ],
+  "homepage": "https://github.com/progressive-digital/block_title_class",
+  "support": {
+    "issues": "https://github.com/progressive-digital/block_title_class/issues",
+    "source": "https://github.com/progressive-digital/block_title_class"
+  },
+  "minimum-stability": "dev",
+  "require": {}
+}
